@@ -1,8 +1,13 @@
 import { Response, Router } from "express";
-import { determineWinner, generateId } from "../core/auction";
+import { selectWinner } from "../core/auction";
 import { create, find, placeBid } from "../data/auction";
 import { UserRequest, authorize } from "./user";
+import { Auction } from "../types/auction";
 import { Permission } from "../types/user";
+
+interface AuctionResponse extends Omit<Auction, "bids"> {
+  winnerUsername: string | null;
+}
 
 const auctionRouter = Router();
 
@@ -12,18 +17,12 @@ auctionRouter.post(
   (req: UserRequest, res: Response) => {
     const { title, endTime } = req.body;
     if (!title || !endTime) {
-      res.status(400).json({ error: "Title and endTime are required" });
+      res.status(400).json({ error: "title and endTime are required fields" });
       return;
     }
 
-    const newAuction = {
-      id: generateId(),
-      title,
-      endTime,
-      bids: [],
-    };
-    create(newAuction);
-    res.status(201).json({ id: newAuction.id });
+    const { id } = create({ title, endTime });
+    res.status(201).json({ id });
   }
 );
 
@@ -38,12 +37,11 @@ auctionRouter.get(
       return;
     }
 
-    res.status(200).json({
-      id: auction.id,
-      title: auction.title,
-      endTime: auction.endTime,
-      winnerUsername: determineWinner(auction),
-    });
+    const auctionDetails: AuctionResponse = {
+      ...auction,
+      winnerUsername: selectWinner(auction),
+    };
+    res.status(200).json(auctionDetails);
   }
 );
 

@@ -8,8 +8,14 @@ export const placeBid = (id: string, bid: Bid) => {
   return find(id)?.bids.push(bid);
 };
 
-export const create = (auction: Auction) => {
-  return auctions.push(auction);
+export const create = (auction: Omit<Auction, "id" | "bids">): Auction => {
+  const newAuction = { ...auction, bids: [], id: generateId() };
+  auctions.push(newAuction);
+  return newAuction;
+};
+
+const generateId = (): string => {
+  return Math.random().toString(36).slice(2, 8);
 };
 
 const auctions: Auction[] = [];

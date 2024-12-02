@@ -12,5 +12,5 @@ app.use("/auctions", auctionRouter);
 
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🌐 Server is up and running at http://localhost:${PORT}`);
 });

@@ -1,23 +1,17 @@
-export const determineWinner = (auction: any): string | null => {
+import { Auction } from "../types/auction";
+
+export const selectWinner = (auction: Auction): string | null => {
   if (new Date(auction.endTime) > new Date()) return null;
+  if (!auction.bids.length) return null;
 
-  let winner = null;
   let maxBid = 0;
-
-  const userBids: { [key: string]: number } = {};
-
-  for (const bid of auction.bids) {
-    userBids[bid.username] = Math.max(bid.value, userBids[bid.username] || 0);
-
-    if (userBids[bid.username] > maxBid) {
-      maxBid = userBids[bid.username];
-      winner = bid.username;
+  let winnerIndex = Infinity;
+  auction.bids.forEach((bid, index) => {
+    if (bid.value > maxBid || (bid.value === maxBid && index < winnerIndex)) {
+      maxBid = bid.value;
+      winnerIndex = index;
     }
-  }
+  });
 
-  return winner;
-};
-
-export const generateId = (): string => {
-  return Math.random().toString(36).slice(2, 8);
+  return auction.bids[winnerIndex].username;
 };

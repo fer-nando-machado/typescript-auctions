@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { find } from "../data/user";
 import { User, Permission as Permission } from "../types/user";
+import { find } from "../data/user";
 
 export interface UserRequest extends Request {
   user?: Omit<User, "password">;
@@ -40,7 +40,7 @@ export const authorize =
   (req: UserRequest, res: Response, next: NextFunction) => {
     const user = req.user;
     if (!user || !user.permissions.includes(permission)) {
-      res.status(403).json({ error: "User is not authorized for this action" });
+      res.status(403).json({ error: "User is not authorized to perform that" });
       return;
     }
 
