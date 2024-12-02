@@ -6,6 +6,12 @@ export interface UserRequest extends Request {
   user?: Omit<User, "password">;
 }
 
+export enum Errors {
+  InvalidHeader = "Invalid authorization header",
+  InvalidCredentials = "Invalid username or password",
+  InvalidPermissions = "User is not authorized",
+}
+
 export const authenticate = (
   req: UserRequest,
   res: Response,
@@ -13,7 +19,7 @@ export const authenticate = (
 ) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith("Basic ")) {
-    res.status(401).json({ error: "Invalid Basic authorization header" });
+    res.status(400).json({ error: Errors.InvalidHeader });
     return;
   }
 
@@ -21,17 +27,20 @@ export const authenticate = (
   const credentials = Buffer.from(base64, "base64").toString();
   const [username, password] = credentials.split(":");
   if (!username || !password) {
-    res.status(400).json({ error: "Invalid credentials format" });
+    res.status(400).json({ error: Errors.InvalidCredentials });
     return;
   }
 
   const user = find(username, password);
   if (!user) {
-    res.status(401).json({ error: "Invalid username or password" });
+    res.status(401).json({ error: Errors.InvalidCredentials });
     return;
   }
 
-  req.user = user;
+  req.user = {
+    username: user.username,
+    permissions: user.permissions,
+  };
   next();
 };
 
@@ -40,7 +49,7 @@ export const authorize =
   (req: UserRequest, res: Response, next: NextFunction) => {
     const user = req.user;
     if (!user || !user.permissions.includes(permission)) {
-      res.status(403).json({ error: "User is not authorized to perform that" });
+      res.status(403).json({ error: Errors.InvalidPermissions });
       return;
     }
 
