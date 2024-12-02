@@ -49,7 +49,7 @@ describe("User middleware router", () => {
       expect(response.body).toEqual({ error: Errors.InvalidHeader });
     });
 
-    it("should return 401 if credentials habe an invalid format", async () => {
+    it("should return 400 if credentials are in an invalid format", async () => {
       const response = await request(app)
         .get("/authenticate")
         .set(
@@ -58,7 +58,7 @@ describe("User middleware router", () => {
         );
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.InvalidCredentials });
+      expect(response.body).toEqual({ error: Errors.InvalidHeader });
     });
 
     it("should return 401 if credentials do not match", async () => {

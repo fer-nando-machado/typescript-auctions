@@ -3,16 +3,21 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/api/index.js",
+    "start": "npm run build && node dist/api/index.js",
     "dev": "nodemon src/api/index.ts",
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "typescript",
+    "clean-architecture",
+    "authentication",
+    "authorization"
+  ],
+  "author": "Fernando Machado",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "express": "^4.21.1",
@@ -21,7 +26,10 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/dist/"
+    ]
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

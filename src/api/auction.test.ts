@@ -52,7 +52,7 @@ describe("Auction router", () => {
   });
 
   describe("GET /auctions/:id", () => {
-    it("should return a future Auction without winner", async () => {
+    it("should return a future Auction without a winner", async () => {
       const createResponse = await request(app)
         .post("/auctions")
         .send({ title: "Cheap Car", endTime: FUTURE_ISO_STRING });

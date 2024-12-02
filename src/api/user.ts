@@ -9,7 +9,7 @@ export interface UserRequest extends Request {
 export enum Errors {
   InvalidHeader = "Invalid authorization header",
   InvalidCredentials = "Invalid username or password",
-  InvalidPermissions = "User is not authorized",
+  InvalidPermissions = "User is not authorized to perform that action",
 }
 
 export const authenticate = (
@@ -27,7 +27,7 @@ export const authenticate = (
   const credentials = Buffer.from(base64, "base64").toString();
   const [username, password] = credentials.split(":");
   if (!username || !password) {
-    res.status(400).json({ error: Errors.InvalidCredentials });
+    res.status(400).json({ error: Errors.InvalidHeader });
     return;
   }
 
