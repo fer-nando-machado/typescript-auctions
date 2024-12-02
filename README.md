@@ -39,13 +39,13 @@ Here you can find some sample curl calls and their expected outputs:
 
 ### Create an auction
 
-**request:**
+_request:_
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -u employee:employee_password -d '{"title": "Example Auction", "endTime": "2024-07-13T12:00:00Z"}' http://localhost:3000/auctions
 ```
 
-**response:**
+_response:_
 
 ```json
 { "id": "abc123" }
@@ -53,7 +53,7 @@ curl -X POST -H "Content-Type: application/json" -u employee:employee_password -
 
 ### Place a bid on an auction
 
-**request:**
+_request:_
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -u bidder1:bidder1_password -d '{"value": 50.50}' http://localhost:3000/auctions/abc123/bid
@@ -61,13 +61,13 @@ curl -X POST -H "Content-Type: application/json" -u bidder1:bidder1_password -d 
 
 ### Get an auction by ID
 
-**request:**
+_request:_
 
 ```bash
 curl -X GET -H "Authorization: Basic YmlkZGVyMTpiaWRkZXIxX3Bhc3N3b3Jk" http://localhost:3000/auctions/abc123
 ```
 
-**response:**
+_response:_
 
 ```json
 {
