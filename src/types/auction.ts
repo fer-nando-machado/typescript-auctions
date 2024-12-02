@@ -1,9 +1,11 @@
-import { Bid } from "./bid";
-
-export type Auction = {
+export interface Auction {
   id: string;
   title: string;
   endTime: string;
   bids: Bid[];
-  winnerUsername?: string;
-};
+}
+
+export interface Bid {
+  username: string;
+  value: number;
+}

@@ -6,9 +6,9 @@ import yaml from "yaml";
 
 const swaggerRouter = express.Router();
 
-const swaggerYamlPath = path.join(__dirname, "./api.yaml");
-const swaggerDocument = yaml.parse(fs.readFileSync(swaggerYamlPath, "utf8"));
+const apiPath = path.join(__dirname, "./api.yaml");
+const apiDocs = yaml.parse(fs.readFileSync(apiPath, "utf8"));
 
-swaggerRouter.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+swaggerRouter.use("/", swaggerUi.serve, swaggerUi.setup(apiDocs));
 
 export default swaggerRouter;

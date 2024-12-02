@@ -1,33 +1,31 @@
 import { Request, Response, NextFunction } from "express";
-import { findByUsernamePassword } from "../data/user";
-import { User } from "../types/user";
+import { find } from "../data/user";
+import { User, Permission as Permission } from "../types/user";
 
-export interface AuthorizedRequest extends Request {
+export interface UserRequest extends Request {
   user?: Omit<User, "password">;
 }
 
-export const authorize = (
-  req: AuthorizedRequest,
+export const authenticate = (
+  req: UserRequest,
   res: Response,
   next: NextFunction
-): void => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
+) => {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Basic ")) {
     res.status(401).json({ error: "Invalid Basic authorization header" });
     return;
   }
 
-  const base64Credentials = authHeader.split(" ")[1];
-  const credentials = Buffer.from(base64Credentials, "base64").toString();
+  const base64 = header.split(" ")[1];
+  const credentials = Buffer.from(base64, "base64").toString();
   const [username, password] = credentials.split(":");
-
   if (!username || !password) {
     res.status(400).json({ error: "Invalid credentials format" });
     return;
   }
 
-  const user = findByUsernamePassword(username, password);
+  const user = find(username, password);
   if (!user) {
     res.status(401).json({ error: "Invalid username or password" });
     return;
@@ -36,3 +34,15 @@ export const authorize = (
   req.user = user;
   next();
 };
+
+export const authorize =
+  (permission: Permission) =>
+  (req: UserRequest, res: Response, next: NextFunction) => {
+    const user = req.user;
+    if (!user || !user.permissions.includes(permission)) {
+      res.status(403).json({ error: "User is not authorized for this action" });
+      return;
+    }
+
+    next();
+  };
