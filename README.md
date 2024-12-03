@@ -2,7 +2,7 @@
 
 Sample Node REST API written in Typescript that implements a set of endpoints capable of creating auctions, accepting bids, and retrieving information about auctions.
 
-All endpoints support a Basic authentication schema and user permissions are handled by an authorization middleware.
+Endpoints are protected by a Basic authentication schema. User permissions are handled by an authorization middleware.
 
 Clean architecture was put in practice to ensure the code's testability, reusability and extensibility, resulting in the following layers:
 
@@ -42,7 +42,7 @@ Here you can find some sample curl calls and their expected outputs:
 _request:_
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -u employee:employee_password -d '{"title": "Example Auction", "endTime": "2024-07-13T12:00:00Z"}' http://localhost:3000/auctions
+curl -X POST -H "Content-Type: application/json" -u employee:employee_password -d '{"title": "Example Auction", "endTime": "2024-07-12T12:00:00Z"}' http://localhost:3000/auctions
 ```
 
 _response:_
@@ -59,6 +59,12 @@ _request:_
 curl -X POST -H "Content-Type: application/json" -u bidder1:bidder1_password -d '{"value": 50.50}' http://localhost:3000/auctions/abc123/bid
 ```
 
+_response:_
+
+```json
+
+```
+
 ### Get an auction by ID
 
 _request:_
@@ -73,7 +79,7 @@ _response:_
 {
   "title": "Example Auction",
   "id": "abc123",
-  "endTime": "2024-07-13T12:00:00Z",
+  "endTime": "2024-07-12T12:00:00Z",
   "winnerUsername": null
 }
 ```
