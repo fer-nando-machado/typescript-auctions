@@ -1,15 +1,21 @@
 # typescript-auctions
 
-Sample Node REST API written in Typescript that implements a set of endpoints capable of creating auctions, accepting bids, and retrieving information about auctions.
+Sample Node REST API written in Typescript that implements a set of endpoints capable of creating Auctions, accepting Bids, and retrieving detailed information about existing Auctions.
 
-Endpoints are protected by a Basic authentication schema. User permissions are handled by an authorization middleware.
+In order to be accepted, a Bid must be placed on a currently active Auction, the timestamp of that Bid must be later than the last registered Bid, and its value must be higher the highest Bid. This ensures the system only keeps track of a sequence of valid Bids and a provides a better feedback for the User placing the Bid.
+
+The winner of an Auction is defined by the highest bid placed before the ending time. In the event of a tie, the first user to place that bid is the winner. Only the highest bid of each User should be considered.
+
+Endpoints are protected by a Basic authentication schema (`-u username:password`). User permissions are specific to each endpoint and are handled by an authorization middleware.
 
 Clean architecture was put in practice to ensure the code's testability, reusability and extensibility, resulting in the following layers:
 
 - `api`: interaction layer where the REST endpoints are exposed
-- `core`: handles pure logic, allowing for easier and granular testing
-- `data`: manages the in-code database, allowing for extension in the future
-- `types`: exposes the interfaces used universally across the app
+- `core`: handles logic, allowing for easier and granular testing
+- `data`: manages the in-memory database, allowing for extension in the future
+- `types`: exposes interfaces and known errors used universally across the app
+
+To ensure compatibility with the automated assessment, the endpoints follow the provided [API specs](./openapi.yaml) without any modification.
 
 ## Quick Start
 
@@ -23,7 +29,7 @@ Installs application dependencies.
 
 Starts the server application locally at <http://localhost:3000>. Optionally in hot-reload `dev` mode.
 
-### `npm test` (`:watch`) (`:coverage`)
+### `npm run test` (`:watch`) (`:coverage`)
 
 Executes all available tests. Optionally accepts modifiers for `watch` or `coverage` mode.
 
