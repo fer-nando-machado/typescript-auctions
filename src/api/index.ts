@@ -5,6 +5,7 @@ import { authenticate } from "./user";
 
 const app = express();
 app.use(express.json());
+
 app.get("/", (_, res) => res.redirect("/docs"));
 app.use("/docs", swaggerRouter);
 
