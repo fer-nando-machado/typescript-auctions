@@ -133,6 +133,19 @@ describe("Auction router", () => {
       expect(response.body).toEqual({ error: KnownError.InferiorBidValue });
     });
 
+    it("should return 400 if a required field is missing", async () => {
+      const { id } = create({
+        title: "Ghost Car",
+        endTime: FUTURE_ISO_STRING,
+      });
+
+      const response = await request(app).post(`/auctions/${id}/bid`).send();
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: KnownError.MissingRequiredFields,
+      });
+    });
+
     it("should return 409 if another valid Bid was placed before", async () => {
       const { id } = create({
         title: "Popular Car",

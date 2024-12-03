@@ -14,7 +14,6 @@ export const determineWinner = (auction: Auction): string | null => {
         : highest,
     { username: "", value: 0, time: new Date().toISOString() }
   );
-
   return winning.username;
 };
 
