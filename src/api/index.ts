@@ -5,8 +5,8 @@ import { authenticate } from "./user";
 
 const app = express();
 app.use(express.json());
-
-app.use("/swagger", swaggerRouter);
+app.get("/", (_, res) => res.redirect("/docs"));
+app.use("/docs", swaggerRouter);
 
 app.use(authenticate);
 app.use("/auctions", auctionRouter);

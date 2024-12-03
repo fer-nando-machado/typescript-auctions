@@ -33,7 +33,7 @@ Builds the app for production on the `dist` folder.
 
 ## Endpoints
 
-Once the application is up and running, you can find a complete endpoint documentation at <http://localhost:3000/swagger>.
+Once the application is up and running, you can find a complete endpoint documentation at <http://localhost:3000/docs>.
 
 Here you can find some sample curl calls and their expected outputs:
 

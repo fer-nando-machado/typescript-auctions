@@ -4,12 +4,12 @@ export const find = (id: string) => {
   return auctions.find((auction) => auction.id === id);
 };
 
-export const placeBid = (id: string, bid: Bid) => {
+export const insertBid = (id: string, bid: Bid) => {
   return find(id)?.bids.push(bid);
 };
 
 export const create = (auction: Omit<Auction, "id" | "bids">): Auction => {
-  const newAuction = { ...auction, bids: [], id: generateId() };
+  const newAuction: Auction = { ...auction, bids: [], id: generateId() };
   auctions.push(newAuction);
   return newAuction;
 };

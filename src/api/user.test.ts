@@ -1,7 +1,7 @@
 import request from "supertest";
 import express, { Response } from "express";
-import { authenticate, authorize, Errors, UserRequest } from "./user";
-import { Permission } from "../types/user";
+import { authenticate, authorize, UserRequest } from "./user";
+import { KnownError, Permission } from "../types/user";
 import { find } from "../data/user";
 
 jest.mock("../data/user");
@@ -46,7 +46,7 @@ describe("User middleware router", () => {
       const response = await request(app).get("/authenticate");
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.InvalidHeader });
+      expect(response.body).toEqual({ error: KnownError.InvalidHeader });
     });
 
     it("should return 400 if credentials are in an invalid format", async () => {
@@ -58,7 +58,7 @@ describe("User middleware router", () => {
         );
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.InvalidHeader });
+      expect(response.body).toEqual({ error: KnownError.InvalidHeader });
     });
 
     it("should return 401 if credentials do not match", async () => {
@@ -74,7 +74,7 @@ describe("User middleware router", () => {
         );
 
       expect(response.status).toBe(401);
-      expect(response.body).toEqual({ error: Errors.InvalidCredentials });
+      expect(response.body).toEqual({ error: KnownError.InvalidCredentials });
     });
   });
 
@@ -113,7 +113,7 @@ describe("User middleware router", () => {
         );
 
       expect(response.status).toBe(403);
-      expect(response.body).toEqual({ error: Errors.InvalidPermissions });
+      expect(response.body).toEqual({ error: KnownError.InvalidPermissions });
     });
   });
 });

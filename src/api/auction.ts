@@ -1,18 +1,12 @@
 import { Response, Router } from "express";
-import { selectWinner } from "../core/auction";
-import { create, find, placeBid } from "../data/auction";
+import { placeBid, determineWinner } from "../core/auction";
+import { create, find, insertBid } from "../data/auction";
 import { UserRequest, authorize } from "./user";
-import { Auction } from "../types/auction";
 import { Permission } from "../types/user";
+import { Auction, KnownError } from "../types/auction";
 
-export interface AuctionResponse extends Omit<Auction, "bids"> {
+interface AuctionResponse extends Omit<Auction, "bids"> {
   winnerUsername: string | null;
-}
-
-export enum Errors {
-  MissingRequiredFields = "Missing required fields",
-  InvalidBidValue = "Bid value must be greater than zero",
-  NotFound = "Auction not found",
 }
 
 const auctionRouter = Router();
@@ -23,7 +17,7 @@ auctionRouter.post(
   (req: UserRequest, res: Response) => {
     const { title, endTime } = req.body;
     if (!title || !endTime) {
-      res.status(400).json({ error: Errors.MissingRequiredFields });
+      res.status(400).json({ error: KnownError.MissingRequiredFields });
       return;
     }
 
@@ -39,7 +33,7 @@ auctionRouter.get(
     const { id } = req.params;
     const auction = find(id);
     if (!auction) {
-      res.status(404).json({ error: Errors.NotFound });
+      res.status(404).json({ error: KnownError.NotFound });
       return;
     }
 
@@ -47,7 +41,7 @@ auctionRouter.get(
       id: auction.id,
       title: auction.title,
       endTime: auction.endTime,
-      winnerUsername: selectWinner(auction),
+      winnerUsername: determineWinner(auction),
     };
     res.status(200).json(response);
   }
@@ -60,18 +54,35 @@ auctionRouter.post(
     const { id } = req.params;
     const { value } = req.body;
     const user = req.user;
-    if (!value || value <= 0) {
-      res.status(400).json({ error: Errors.InvalidBidValue });
+    if (!value || !id || !user) {
+      res.status(400).json({ error: KnownError.MissingRequiredFields });
       return;
     }
 
-    const bids = placeBid(id, { username: user!.username, value });
-    if (!bids) {
-      res.status(404).json({ error: Errors.NotFound });
-      return;
+    try {
+      placeBid(id, {
+        value,
+        username: user.username,
+        time: new Date().toISOString(),
+      });
+      res.status(200).send();
+    } catch (error) {
+      const knownError = error as Error;
+      switch (knownError.message) {
+        case KnownError.NotFound:
+          res.status(404).json({ error: knownError.message });
+          break;
+        case KnownError.Ended:
+        case KnownError.InferiorBidValue:
+          res.status(400).json({ error: knownError.message });
+          break;
+        case KnownError.ConflictingBidTime:
+          res.status(409).json({ error: knownError.message });
+          break;
+        default:
+          res.status(500).json({ error });
+      }
     }
-
-    res.status(200).send();
   }
 );
 

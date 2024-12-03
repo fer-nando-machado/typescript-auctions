@@ -1,7 +1,9 @@
 import request from "supertest";
 import express, { Response, NextFunction } from "express";
-import auctionRouter, { Errors } from "./auction";
+import auctionRouter from "./auction";
 import { UserRequest, authenticate } from "./user";
+import { create, insertBid } from "../data/auction";
+import { KnownError } from "../types/auction";
 
 jest.mock("./user", () => ({
   authenticate: jest.fn(
@@ -39,7 +41,9 @@ describe("Auction router", () => {
         .post("/auctions")
         .send({ endTime: FUTURE_ISO_STRING });
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.MissingRequiredFields });
+      expect(response.body).toEqual({
+        error: KnownError.MissingRequiredFields,
+      });
     });
 
     it("should return 400 if the endTime is missing", async () => {
@@ -47,16 +51,18 @@ describe("Auction router", () => {
         .post("/auctions")
         .send({ title: "Rare Car" });
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.MissingRequiredFields });
+      expect(response.body).toEqual({
+        error: KnownError.MissingRequiredFields,
+      });
     });
   });
 
   describe("GET /auctions/:id", () => {
     it("should return a future Auction without a winner", async () => {
-      const createResponse = await request(app)
-        .post("/auctions")
-        .send({ title: "Cheap Car", endTime: FUTURE_ISO_STRING });
-      const { id } = createResponse.body;
+      const { id } = create({
+        title: "Cheap Car",
+        endTime: FUTURE_ISO_STRING,
+      });
 
       const response = await request(app).get(`/auctions/${id}`);
       expect(response.status).toBe(200);
@@ -69,15 +75,15 @@ describe("Auction router", () => {
     });
 
     it("should return a past Auction with a winner", async () => {
-      const createResponse = await request(app)
-        .post("/auctions")
-        .send({ title: "Expensive Car", endTime: PAST_ISO_STRING });
-      const { id } = createResponse.body;
-
-      const bidResponse = await request(app)
-        .post(`/auctions/${id}/bid`)
-        .send({ value: 100 });
-      expect(bidResponse.status).toBe(200);
+      const { id } = create({
+        title: "Expensive Car",
+        endTime: PAST_ISO_STRING,
+      });
+      insertBid(id, {
+        username: "test-user",
+        value: 100,
+        time: PAST_ISO_STRING,
+      });
 
       const response = await request(app).get(`/auctions/${id}`);
       expect(response.status).toBe(200);
@@ -89,19 +95,19 @@ describe("Auction router", () => {
       });
     });
 
-    it("should return 404 if auction is not found", async () => {
+    it("should return 404 if Auction is not found", async () => {
       const response = await request(app).get("/auctions/000000");
       expect(response.status).toBe(404);
-      expect(response.body).toEqual({ error: Errors.NotFound });
+      expect(response.body).toEqual({ error: KnownError.NotFound });
     });
   });
 
   describe("POST /auctions/:id/bid", () => {
-    it("should place a bid and return 200", async () => {
-      const createResponse = await request(app)
-        .post("/auctions")
-        .send({ title: "Real Car", endTime: FUTURE_ISO_STRING });
-      const { id } = createResponse.body;
+    it("should place a Bid and return 200", async () => {
+      const { id } = create({
+        title: "Real Car",
+        endTime: FUTURE_ISO_STRING,
+      });
 
       const bidResponse = await request(app)
         .post(`/auctions/${id}/bid`)
@@ -109,26 +115,48 @@ describe("Auction router", () => {
       expect(bidResponse.status).toBe(200);
     });
 
-    it("should return 400 if bid value is invalid", async () => {
-      const createResponse = await request(app)
-        .post("/auctions")
-        .send({ title: "Fake Car", endTime: FUTURE_ISO_STRING });
-
-      const { id } = createResponse.body;
+    it("should return 400 if the Bid value is invalid", async () => {
+      const { id } = create({
+        title: "Fake Car",
+        endTime: FUTURE_ISO_STRING,
+      });
+      insertBid(id, {
+        username: "test-user",
+        value: 100,
+        time: PAST_ISO_STRING,
+      });
 
       const response = await request(app)
         .post(`/auctions/${id}/bid`)
-        .send({ value: -1 });
+        .send({ value: 100 });
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: Errors.InvalidBidValue });
+      expect(response.body).toEqual({ error: KnownError.InferiorBidValue });
     });
 
-    it("should return 404 if auction is not found", async () => {
+    it("should return 409 if another valid Bid was placed before", async () => {
+      const { id } = create({
+        title: "Popular Car",
+        endTime: FUTURE_ISO_STRING,
+      });
+      insertBid(id, {
+        username: "test-user",
+        value: 100,
+        time: FUTURE_ISO_STRING,
+      });
+
+      const response = await request(app)
+        .post(`/auctions/${id}/bid`)
+        .send({ value: 100 });
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({ error: KnownError.ConflictingBidTime });
+    });
+
+    it("should return 404 if the Auction is not found", async () => {
       const response = await request(app)
         .post("/auctions/000000/bid")
         .send({ value: 100 });
       expect(response.status).toBe(404);
-      expect(response.body).toEqual({ error: Errors.NotFound });
+      expect(response.body).toEqual({ error: KnownError.NotFound });
     });
   });
 });
